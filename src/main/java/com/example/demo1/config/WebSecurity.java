@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
@@ -25,11 +26,11 @@ import java.io.UnsupportedEncodingException;
 public class WebSecurity {
 
     @Configuration
-    public static class BasicAuthConfig {
+    @Order(1)
+    public static class BasicAuthConfig extends WebSecurityConfigurerAdapter {
 
-        @Bean
-        @Order(1)
-        public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
             http
                     .cors().and().csrf().disable()
                     .authorizeRequests()
@@ -47,13 +48,13 @@ public class WebSecurity {
                     .logoutUrl("/logout")
                     .deleteCookies("JSESSIONID")
             ;
-            return http.build();
         }
 
     }
 
     @Configuration
-    public static class Auth0Config {
+    @Order(2)
+    public static class Auth0Config extends WebSecurityConfigurerAdapter {
 
         @Value(value = "${com.auth0.domain}")
         private String domain;
@@ -70,11 +71,14 @@ public class WebSecurity {
         @Autowired
         private CustomAuthenticationProvider authProvider;
 
-        @Bean
-        public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-            AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-            authenticationManagerBuilder.authenticationProvider(authProvider);
-            return authenticationManagerBuilder.build();
+        // create two users, admin and user
+        @Autowired
+        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+            auth.authenticationProvider(authProvider);
+        }
+        @Autowired
+        public void configure(AuthenticationManagerBuilder auth) throws Exception {
+            auth.authenticationProvider(authProvider);
         }
 
         @Bean
@@ -90,9 +94,8 @@ public class WebSecurity {
                     .build();
         }
 
-        @Bean
-        @Order(2)
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
             http
                     .authorizeRequests()
                     .antMatchers("/auth0/*")
@@ -115,7 +118,6 @@ public class WebSecurity {
                     .and()
                     .csrf()
                     .disable();
-            return http.build();
         }
 
         public String getDomain() {
