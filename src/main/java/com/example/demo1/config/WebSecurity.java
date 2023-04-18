@@ -38,8 +38,8 @@ public class WebSecurity {
                     .cors().and().csrf().disable()
                     .authorizeRequests()
                     .antMatchers("/users").hasRole("ADMINISTRATOR")
-//                    .antMatchers("/admins").hasRole("ADMIN")
-                    .antMatchers("/login", "/auth0/*").permitAll()
+                    .antMatchers("/admins").hasRole("ADMIN")
+                    .antMatchers("/login", "/auth0/*", "/auth0").permitAll()
                     .anyRequest().authenticated()
 
                     .and()
@@ -114,11 +114,6 @@ public class WebSecurity {
                     .formLogin()
                     .loginPage("/auth0/in")
 
-//                    .and()
-//                    .logout()
-//                    .logoutUrl("/auth0/out")
-//                    .logoutSuccessHandler(logoutSuccessHandler())
-//                    .deleteCookies("JSESSIONID")
                     .and()
                     .exceptionHandling()
                     .accessDeniedPage("/403")
@@ -133,6 +128,10 @@ public class WebSecurity {
 
         public String getClientId() {
             return clientId;
+        }
+
+        public String getClientSecret() {
+            return clientSecret;
         }
 
         public String getLogoutUrl() {
