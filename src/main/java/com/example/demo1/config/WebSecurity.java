@@ -27,6 +27,11 @@ public class WebSecurity {
     @Order(1)
     public static class BasicAuthConfig extends WebSecurityConfigurerAdapter {
 
+        @Bean
+        public LogoutSuccessHandler logoutSuccessfulHandler() {
+            return new LogoutController();
+        }
+
         @Override
         public void configure(HttpSecurity http) throws Exception {
             http
@@ -43,8 +48,11 @@ public class WebSecurity {
 
                     .and()
                     .logout()
-                    .logoutUrl("/logout")
+                    .logoutSuccessHandler(logoutSuccessfulHandler())
                     .deleteCookies("JSESSIONID")
+                    .and()
+                    .exceptionHandling()
+                    .accessDeniedPage("/403")
             ;
         }
 
@@ -74,6 +82,7 @@ public class WebSecurity {
         public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
             auth.authenticationProvider(authProvider);
         }
+
         @Autowired
         public void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.authenticationProvider(authProvider);
@@ -105,11 +114,11 @@ public class WebSecurity {
                     .formLogin()
                     .loginPage("/auth0/in")
 
-                    .and()
-                    .logout()
-                    .logoutUrl("/auth0/out")
-                    .logoutSuccessHandler(logoutSuccessHandler())
-                    .deleteCookies("JSESSIONID")
+//                    .and()
+//                    .logout()
+//                    .logoutUrl("/auth0/out")
+//                    .logoutSuccessHandler(logoutSuccessHandler())
+//                    .deleteCookies("JSESSIONID")
                     .and()
                     .exceptionHandling()
                     .accessDeniedPage("/403")

@@ -49,7 +49,7 @@ public class Controller {
     protected void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String redirectUri = config.getContextPath(request) + "/auth0/callback";
         String authorizeUrl = authenticationController.buildAuthorizeUrl(request, response, redirectUri)
-                .withScope("openid email ADMINISTRATOR")
+                .withScope("openid email")
                 .build();
         response.sendRedirect(authorizeUrl);
     }
